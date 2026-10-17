@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XenMasterX - Temiz Stem Separator</title>
+    <style>
+        :root {
+            --bg-black: #0a0a0c;
+            --card-bg: #121318;
+            --blue-accent: #0088ff;
+            --red-accent: #ff2a5f;
+            --text-light: #f0f0f5;
+            --text-muted: #8a8d9b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-black);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            background: linear-gradient(90deg, #ff2a5f15, transparent, #0088ff15);
+            border-bottom: 1px solid #222;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, var(--red-accent), var(--blue-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 30px auto;
+        }
+
+        .upload-box {
+            border: 2px dashed var(--blue-accent);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .upload-box:hover {
+            border-color: var(--red-accent);
+            box-shadow: 0 0 15px rgba(255, 42, 95, 0.2);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--blue-accent), var(--red-accent));
+            border: none;
+            color: #fff;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .status {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--blue-accent);
+        }
+
+        .tracks-container {
+            margin-top: 30px;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .track-card {
+            background: var(--card-bg);
+            border-left: 4px solid var(--blue-accent);
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .track-card.vocal { border-left-color: var(--red-accent); }
+        .track-card.drums { border-left-color: var(--blue-accent); }
+        .track-card.bass { border-left-color: #00ffcc; }
+        .track-card.other { border-left-color: #ffcc00; }
+
+        .track-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            width: 120px;
+        }
+
+        audio {
+            height: 40px;
+            outline: none;
+        }
+
+        .download-btn {
+            background: transparent;
+            border: 1px solid var(--blue-accent);
+            color: var(--blue-accent);
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .download-btn:hover {
+            background: var(--blue-accent);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>XenMasterX Aİ</h1>
+        <p style="color: var(--text-muted); margin-top: 5px;">AI Tabanlı %100 Temiz Ses Ayrıştırıcı</p>
+    </header>
+
+    <div class="container">
+        <div class="upload-box" onclick="document.getElementById('audioInput').click()">
+            <p id="fileNameDisplay">Ses dosyanızı seçin veya buraya sürükleyin (.mp3, .wav, .flac)</p>
+            <input type="file" id="audioInput" accept="audio/*" onchange="handleFileSelect(event)">
+            <button class="btn" type="button">Dosya Seç</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn" style="background: linear-gradient(45deg, var(--red-accent), var(--blue-accent));" onclick="startSeparation()">Ayrıştırmayı Başlat (AI)</button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div id="tracksContainer" class="tracks-container">
+            <div class="track-card vocal">
+                <span class="track-title">Vokaller</span>
+                <audio id="audioVocals" controls></audio>
+                <a id="dlVocals" class="download-btn" download>İndir WAV</a>
+            </div>
+
+            <div class="track-card drums">
+                <span class="track-title">Beat / Davul</span>
+                <audio id="audioDrums" controls></audio>
+                <a id="dlDrums" class="download-btn" download>İndir WAV</a>
+            </div>
+
+            <div class="track-card bass">
+                <span class="track-title">Bas</span>
+                <audio id="audioBass" controls></audio>
+                <a id="dlBass" class="download-btn" download>İndir WAV</a>
+            </div>
+
+            <div class="track-card other">
+                <span class="track-title">Adlib / Diğer</span>
+                <audio id="audioOther" controls></audio>
+                <a id="dlOther" class="download-btn" download>İndir WAV</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileNameDisplay').innerText = `Seçilen Dosya: ${file.name}`;
+            }
+        }
+
+        async function startSeparation() {
+            if (!selectedFile) {
+                alert("Lütfen önce bir ses dosyası seçin!");
+                return;
+            }
+
+            const statusDiv = document.getElementById('status');
+            const tracksContainer = document.getElementById('tracksContainer');
+            
+            statusDiv.innerText = "⏳ AI modeli çalışıyor... Lütfen bekleyin (Bu işlem işlemcinize göre 10-40 sn sürebilir).";
+            tracksContainer.style.display = "none";
+
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+
+            try {
+                const response = await fetch("/api/separate", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error("Ayrıştırma işleminde hata oluştu.");
+                }
+
+                const data = await response.json();
+
+                // Audio Player ve İndirme Linklerini Güncelle
+                setupTrack('audioVocals', 'dlVocals', data.tracks.vocals, 'vocal.wav');
+                setupTrack('audioDrums', 'dlDrums', data.tracks.drums, 'beat.wav');
+                setupTrack('audioBass', 'dlBass', data.tracks.bass, 'bass.wav');
+                setupTrack('audioOther', 'dlOther', data.tracks.other, 'adlibs_other.wav');
+
+                statusDiv.innerText = "✅ Ayrıştırma tamamlandı! Aşağıdan dinleyebilir ve indirebilirsiniz.";
+                tracksContainer.style.display = "flex";
+
+            } catch (err) {
+                statusDiv.innerText = "❌ Hata oluştu: " + err.message;
+            }
+        }
+
+        function setupTrack(audioId, dlId, url, filename) {
+            const audio = document.getElementById(audioId);
+            const dl = document.getElementById(dlId);
+            audio.src = url;
+            dl.href = url;
+            dl.download = filename;
+        }
+    </script>
+</body>
+</html>
